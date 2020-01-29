@@ -5,7 +5,7 @@
 
 $lineHeightForNav: 70px;
 $lineHeightForSearch: 50px;
-$listBucketWidth:25%;
+$listBucketWidth:24%;
 $listGutter: 10px 0.5%;
 
 
@@ -97,7 +97,7 @@ header.menu {
      
         div.searchResults{
             position: relative;
-            width: 100%;
+            max-width: 98%;
             margin: 0 10px;
 
             h2.resultsCount{

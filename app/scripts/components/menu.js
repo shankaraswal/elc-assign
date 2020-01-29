@@ -2,10 +2,10 @@
  * This file will hold the Menu that lives at the top of the Page, this is all rendered using a React Component...
  * 
  */
-import React from 'react';
+import React, { Component } from 'react';
 import axios from 'axios'
 
-class Menu extends React.Component {
+class Menu extends Component {
 
     /**
      * Main constructor for the Menu Class
@@ -15,12 +15,12 @@ class Menu extends React.Component {
         super();
         this.state = {
             showingSearch: false,
+            showingSearchResults:false,
             mylist:'',
             filterlist:'',
-            count:0
+            count:0,
+            url :'http://localhost:3035'
         };
-        this.onSearch = this.onSearch.bind(this);
-        this.showSearchContainer = this.showSearchContainer.bind(this);
     }
 
     /**
@@ -29,41 +29,57 @@ class Menu extends React.Component {
      * @param e [Object] - the event from a click handler
      */
 
-    componentDidMount(){ 
-        this.getData();
+   componentDidMount(){ 
+        //on component load: getting all records
+       this.getData();
     }
     
     showSearchContainer (e){
             e.preventDefault();
+            this.inpSearch.value = "";
             this.setState({
-                showingSearch: !this.state.showingSearch
+                showingSearch: !this.state.showingSearch,
+                filterlist:'',
+                count:0
             });
         }
 
-        /**
-         * Calls upon search change
-         * @memberof Menu
-         * @param e [Object] - the event from a text change handler
-         */
-
-    getData(){
-        return axios.get('http://localhost:3035')
+     
+        
+    /**
+     * Fn: to fetch data from node
+     * @memberof Menu
+     * @param : na
+     */
+    getData =async ()=>{
+        return await axios.get('http://localhost:3035')
         .then((res)=>{
             const { data } = res;
             this.setState({mylist: data})
         })
         .catch((err)=>{
-            //  this.setState({isDataSend: true, isLoading:true})
+            console.log(err);
         })
     }
 
-    onSearch (e){
+    /**
+     * Calls upon search change
+     * @memberof Menu
+     * @param e [Object] - the event from a text change handler
+     */
+    onSearch = e => {
             let filterlist='';
-            if(e.length > 0){
-                filterlist= this.state.mylist.filter((item)=>{
-                return (item.name).toLowerCase().search(e.toLowerCase()) !== -1;
-              });
-            }
+
+            //console.log(e, this.state.mylist)
+             if(e.length > 0){
+                this.setState({showingSearchResults:true})
+                 filterlist= this.state.mylist.filter((item)=>{
+                 return (item.name).toLowerCase().search(e.toLowerCase()) !== -1;
+               });
+             }
+             else{
+                this.setState({showingSearchResults:false})
+             }
             this.setState({filterlist, count:filterlist.length})
         }
 
@@ -77,6 +93,7 @@ class Menu extends React.Component {
      * @memberof App
     */
     render() {
+        console.log(this.state.mylist)
           return (
             <header className="menu">
                 <div className="menu-container">
@@ -98,35 +115,39 @@ class Menu extends React.Component {
                     </div>
                 </div>
                 <div className={(this.state.showingSearch ? "showing " : "") + "search-container"}>
-                    <input type="text" onChange={(e) => this.onSearch(e.target.value)} />
+                    <input type="text" ref={el => this.inpSearch = el} onChange={(e) => this.onSearch(e.target.value)} />
                     <a href="#" onClick={(e) => this.showSearchContainer(e)}>
                         <i className="material-icons close">close</i>
                     </a>
 
+                    {this.state.showingSearchResults && this.state.count > 0 ? (
+                         <div className="searchResults">
+                         <h2 className="resultsCount">Total Records Count: {this.state.count} <hr /></h2>
+                        
+                         {(this.state.filterlist ||[]).map(item=>(
+                                 <div className="listBucket" key={item._id}>
+                                 <div className="body">
+                                     <div className="imgBucket">
+                                         <img src={item.picture} />
+                                     </div>
+                                     <div className="contentBucket">
+                                         <h2>{item.name}</h2>
+                                         <h3>Available: {item.isActive}</h3>
+                                         <p className="price">Price: <b>{item.price}</b></p>
+                                         <p className="tags">Tags: {(item.tags ||[]).map(i=>(
+                                             <b key={i}>{i.toUpperCase()} </b>
+                                         ))}</p>
+                                         <p className="desc">{item.about}</p>
+                                     </div>
+                                     
+                                 </div>
+                                 </div>
+                             ))}
+                         </div>
 
-                    <div className="searchResults">
-                        <h2 className="resultsCount">Total Records Count: {this.state.count} <hr /></h2>
-                       
-                        {(this.state.filterlist ||[]).map(item=>(
-                                <div className="listBucket" key={item._id}>
-                                <div className="body">
-                                    <div className="imgBucket">
-                                        <img src={item.picture} />
-                                    </div>
-                                    <div className="contentBucket">
-                                        <h2>{item.name}</h2>
-                                        <h3>Available: {item.isActive}</h3>
-                                        <p className="price">Price: <b>{item.price}</b></p>
-                                        <p className="tags">Tags: {(item.tags ||[]).map(i=>(
-                                            <b key={i}>{i.toUpperCase()} </b>
-                                        ))}</p>
-                                        <p className="desc">{item.about}</p>
-                                    </div>
-                                    
-                                </div>
-                                </div>
-                            ))}
-                        </div>
+                        ) : ''}
+
+                   
 
                 </div>
             </header>

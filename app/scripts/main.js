@@ -14,6 +14,8 @@
  */
 import React from 'react';
 import ReactDOM from 'react-dom';
+import "@babel/polyfill";
+
 
 import Menu from './components/menu';
 import Home from './components/home';
